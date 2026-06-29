@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FAMILIES } from '../lib/families'
 import MemberSelect from '../components/MemberSelect'
 import PayerInput from '../components/PayerInput'
 
@@ -18,6 +19,17 @@ export default function NewLunch({ members, activeUser, onSave }) {
 
   const total = payers.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
 
+  // Build family groups filtered to current members
+  const families = FAMILIES.map((f) => ({
+    ...f,
+    members: f.members.filter((m) => members.includes(m)),
+  })).filter((f) => f.members.length > 0)
+
+  // Extra members not in predefined families
+  const knownSet = new Set(FAMILIES.flatMap((f) => f.members))
+  const extra = members.filter((m) => !knownSet.has(m))
+  if (extra.length > 0) families.push({ name: 'Outros', members: extra })
+
   function handleAttendeeChange(newAttendees) {
     setAttendees(newAttendees)
     setPayers((prev) => prev.filter((p) => newAttendees.includes(p.name)))
@@ -27,8 +39,7 @@ export default function NewLunch({ members, activeUser, onSave }) {
     if (attendees.length < 2) return 'Selecione ao menos 2 pessoas.'
     if (payers.length === 0) return 'Selecione quem pagou.'
     if (total <= 0) return 'Informe os valores pagos.'
-    const hasEmpty = payers.some((p) => !parseFloat(p.amount))
-    if (hasEmpty) return 'Preencha o valor de cada pagador.'
+    if (payers.some((p) => !parseFloat(p.amount))) return 'Preencha o valor de cada pagador.'
     return null
   }
 
@@ -67,7 +78,7 @@ export default function NewLunch({ members, activeUser, onSave }) {
       <div className="px-4 py-6 space-y-6">
         <h2 className="text-xl font-bold text-gray-900">Novo almoço</h2>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Data</label>
             <input
@@ -79,7 +90,9 @@ export default function NewLunch({ members, activeUser, onSave }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descrição <span className="text-gray-400 font-normal">(opcional)</span></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Descrição <span className="text-gray-400 font-normal">(opcional)</span>
+            </label>
             <input
               type="text"
               inputMode="text"
@@ -91,8 +104,13 @@ export default function NewLunch({ members, activeUser, onSave }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Quem estava?</label>
-            <MemberSelect members={members} selected={attendees} onChange={handleAttendeeChange} />
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-medium text-gray-700">Quem estava?</label>
+              {attendees.length > 0 && (
+                <span className="text-xs text-brand font-semibold">{attendees.length} selecionados</span>
+              )}
+            </div>
+            <MemberSelect families={families} selected={attendees} onChange={handleAttendeeChange} />
           </div>
 
           {attendees.length >= 1 && (
@@ -104,8 +122,15 @@ export default function NewLunch({ members, activeUser, onSave }) {
 
           {total > 0 && (
             <div className="flex items-center justify-between bg-brand-light rounded-2xl px-4 py-3">
-              <span className="text-sm font-medium text-brand-dark">Total</span>
-              <span className="text-lg font-bold text-brand">
+              <div>
+                <p className="text-xs text-brand-dark">Total</p>
+                {attendees.length > 0 && (
+                  <p className="text-xs text-brand mt-0.5">
+                    R$ {(total / attendees.length).toFixed(2).replace('.', ',')} por pessoa
+                  </p>
+                )}
+              </div>
+              <span className="text-xl font-bold text-brand">
                 R$ {total.toFixed(2).replace('.', ',')}
               </span>
             </div>

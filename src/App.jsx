@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useStorage } from './hooks/useStorage'
 import { computeSettlements } from './lib/settlement'
+import { ALL_MEMBERS, ADMIN_USER } from './lib/families'
 import SelectUser from './pages/SelectUser'
 import NewLunch from './pages/NewLunch'
 import History from './pages/History'
@@ -8,13 +10,57 @@ import Balance from './pages/Balance'
 import BottomNav from './components/BottomNav'
 import UserChip from './components/UserChip'
 
-const DEFAULT_MEMBERS = ['Ana', 'Beto', 'Carla', 'Duda']
+function SplashScreen({ onDone }) {
+  const [phase, setPhase] = useState(0)
+  // phase 0: entrada do emoji, 1: título aparece, 2: fade out
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase(1), 600)
+    const t2 = setTimeout(() => setPhase(2), 2800)
+    const t3 = setTimeout(() => onDone(), 3500)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, [onDone])
+
+  return (
+    <div
+      className={`fixed inset-0 bg-brand flex flex-col items-center justify-center z-50 transition-opacity duration-700 ${
+        phase === 2 ? 'opacity-0' : 'opacity-100'
+      }`}
+    >
+      <div
+        className={`text-6xl mb-6 transition-all duration-500 ${
+          phase >= 0 ? 'scale-100 opacity-100' : 'scale-50 opacity-0'
+        }`}
+        style={{ transform: phase === 0 ? 'scale(0.4)' : 'scale(1)' }}
+      >
+        🍽️
+      </div>
+      <div
+        className={`text-center px-8 transition-all duration-500 ${
+          phase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}
+      >
+        <p className="text-white/70 text-sm font-medium tracking-wide mb-1">Bem-vindo ao</p>
+        <h1 className="text-white text-2xl font-bold leading-tight">
+          Vem almoçar<br />na porta, pô! 😄
+        </h1>
+      </div>
+    </div>
+  )
+}
 
 export default function App() {
-  const [members, setMembers] = useStorage('rachai_members', DEFAULT_MEMBERS)
+  const [members, setMembers] = useStorage('rachai_members', ALL_MEMBERS)
   const [activeUser, setActiveUser] = useStorage('rachai_active_user', '')
   const [lunches, setLunches] = useStorage('rachai_lunches', [])
   const [settlements, setSettlements] = useStorage('rachai_settlements', [])
+  const [showSplash, setShowSplash] = useState(() => {
+    return !sessionStorage.getItem('rachai_splash_shown')
+  })
+
+  function hideSplash() {
+    sessionStorage.setItem('rachai_splash_shown', '1')
+    setShowSplash(false)
+  }
 
   function handleAddMember(name) {
     setMembers((prev) => [...prev, name])
@@ -52,62 +98,63 @@ export default function App() {
     ? pendingDebts.filter((d) => d.from === activeUser || d.to === activeUser).length
     : 0
 
-  if (!activeUser) {
-    return (
-      <BrowserRouter>
+  const isAdmin = activeUser === ADMIN_USER
+
+  return (
+    <BrowserRouter>
+      {showSplash && <SplashScreen onDone={hideSplash} />}
+
+      {!activeUser ? (
         <SelectUser
           members={members}
           activeUser={activeUser}
           onSelect={handleSelectUser}
           onAddMember={handleAddMember}
         />
-      </BrowserRouter>
-    )
-  }
+      ) : (
+        <div className="flex flex-col min-h-svh bg-gray-50">
+          <UserChip user={activeUser} isAdmin={isAdmin} onSwitch={handleSwitchUser} />
 
-  return (
-    <BrowserRouter>
-      <div className="flex flex-col min-h-svh bg-gray-50">
-        <UserChip user={activeUser} onSwitch={handleSwitchUser} />
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<Navigate to="/novo" replace />} />
+              <Route
+                path="/novo"
+                element={
+                  <NewLunch
+                    members={members}
+                    activeUser={activeUser}
+                    onSave={handleSaveLunch}
+                  />
+                }
+              />
+              <Route
+                path="/historico"
+                element={
+                  <History
+                    lunches={lunches}
+                    onDelete={handleDeleteLunch}
+                    isAdmin={isAdmin}
+                  />
+                }
+              />
+              <Route
+                path="/balanco"
+                element={
+                  <Balance
+                    lunches={lunches}
+                    settlements={settlements}
+                    activeUser={activeUser}
+                    onPay={handlePay}
+                  />
+                }
+              />
+            </Routes>
+          </main>
 
-        <main className="flex-1">
-          <Routes>
-            <Route path="/" element={<Navigate to="/novo" replace />} />
-            <Route
-              path="/novo"
-              element={
-                <NewLunch
-                  members={members}
-                  activeUser={activeUser}
-                  onSave={handleSaveLunch}
-                />
-              }
-            />
-            <Route
-              path="/historico"
-              element={
-                <History
-                  lunches={lunches}
-                  onDelete={handleDeleteLunch}
-                />
-              }
-            />
-            <Route
-              path="/balanco"
-              element={
-                <Balance
-                  lunches={lunches}
-                  settlements={settlements}
-                  activeUser={activeUser}
-                  onPay={handlePay}
-                />
-              }
-            />
-          </Routes>
-        </main>
-
-        <BottomNav badgeCount={myPendingCount} />
-      </div>
+          <BottomNav badgeCount={myPendingCount} />
+        </div>
+      )}
     </BrowserRouter>
   )
 }
