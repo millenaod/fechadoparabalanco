@@ -1,5 +1,6 @@
 export const FAMILIES = [
-  { name: 'Família Cida', members: ['Cida', 'Millena', 'Luis', 'Suelen', 'Eduarda', 'Lucas'] },
+  { name: 'Família Cida', members: ['Cida', 'Millena', 'Luis', 'Suelen'] },
+  { name: 'Família Eduarda', members: ['Eduarda', 'Lucas'] },
   { name: 'Família Márcia', members: ['Marcia', 'Jose Marcio', 'Iara', 'Vinicius', 'Marcela', 'Junior', 'Tulio'] },
   { name: null, members: ['Cristina'] },
   { name: 'Família Rose', members: ['Rose', 'Tio Luis', 'Livia', 'Tutty', 'Bruno', 'Ravena', 'Breno', 'Gabi'] },
