@@ -4,6 +4,7 @@ import { useStorage } from './hooks/useStorage'
 import { computeSettlements } from './lib/settlement'
 import { ALL_MEMBERS } from './lib/families'
 import SelectUser from './pages/SelectUser'
+import Home from './pages/Home'
 import NewLunch from './pages/NewLunch'
 import History from './pages/History'
 import Balance from './pages/Balance'
@@ -108,7 +109,16 @@ export default function App() {
 
           <main className="flex-1">
             <Routes>
-              <Route path="/" element={<Navigate to="/novo" replace />} />
+              <Route
+                path="/"
+                element={
+                  <Home
+                    activeUser={activeUser}
+                    lunches={lunches}
+                    settlements={settlements}
+                  />
+                }
+              />
               <Route
                 path="/novo"
                 element={

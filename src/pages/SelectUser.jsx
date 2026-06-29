@@ -9,7 +9,7 @@ export default function SelectUser({ members, onSelect, onAddMember }) {
 
   function handleSelect(name) {
     onSelect(name)
-    navigate('/novo')
+    navigate('/')
   }
 
   function handleAdd(e) {
