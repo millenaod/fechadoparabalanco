@@ -9,6 +9,8 @@ import Home from './pages/Home'
 import NewLunch from './pages/NewLunch'
 import History from './pages/History'
 import Balance from './pages/Balance'
+import General from './pages/General'
+import Profile from './pages/Profile'
 import BottomNav from './components/BottomNav'
 import UserChip from './components/UserChip'
 
@@ -162,6 +164,12 @@ export default function App() {
               <Route path="/balanco" element={
                 <Balance lunches={lunches} settlements={settlements} activeUser={readOnly ? null : activeUser} onPay={readOnly ? null : handlePay} />
               } />
+              <Route path="/geral" element={
+                <General lunches={lunches} settlements={settlements} activeUser={readOnly ? null : activeUser} onPay={readOnly ? null : handlePay} />
+              } />
+              {!readOnly && (
+                <Route path="/perfil" element={<Profile activeUser={activeUser} />} />
+              )}
             </Routes>
           </main>
 
