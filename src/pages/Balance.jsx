@@ -3,18 +3,27 @@ import DebtCard from '../components/DebtCard'
 import { computeSettlements } from '../lib/settlement'
 
 export default function Balance({ lunches, settlements, activeUser, onPay }) {
-  const [onlyMine, setOnlyMine] = useState(false)
+  const [onlyMine, setOnlyMine] = useState(!!activeUser)
   const [showPaid, setShowPaid] = useState(false)
 
   const pending = computeSettlements(lunches, settlements)
   const paid = settlements
 
-  const filteredPending = onlyMine
+  const filteredPending = onlyMine && activeUser
     ? pending.filter((d) => d.from === activeUser || d.to === activeUser)
     : pending
 
+  // Separar "me devem" de "eu devo" para mostrar na ordem certa
+  const iOwe      = filteredPending.filter((d) => d.from === activeUser)
+  const owedToMe  = filteredPending.filter((d) => d.to === activeUser)
+  const others    = filteredPending.filter((d) => d.from !== activeUser && d.to !== activeUser)
+
+  const orderedPending = activeUser
+    ? [...owedToMe, ...iOwe, ...others]
+    : filteredPending
+
   const totalPending = pending.reduce((s, d) => s + d.amount, 0)
-  const totalPaid = paid.reduce((s, d) => s + d.amount, 0)
+  const totalPaid    = paid.reduce((s, d) => s + d.amount, 0)
 
   return (
     <div className="flex flex-col pb-24">
@@ -38,30 +47,41 @@ export default function Balance({ lunches, settlements, activeUser, onPay }) {
 
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-gray-700">Dívidas pendentes</p>
-          <button
-            onClick={() => setOnlyMine((v) => !v)}
-            className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
-              onlyMine ? 'bg-brand text-white border-brand' : 'bg-white text-gray-500 border-gray-200'
-            }`}
-          >
-            Só minhas
-          </button>
+          {activeUser && (
+            <button
+              onClick={() => setOnlyMine((v) => !v)}
+              className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
+                onlyMine ? 'bg-brand text-white border-brand' : 'bg-white text-gray-500 border-gray-200'
+              }`}
+            >
+              Só minhas
+            </button>
+          )}
         </div>
 
-        {filteredPending.length === 0 ? (
+        {orderedPending.length === 0 ? (
           <div className="text-center py-8">
             <div className="text-4xl mb-2">🎉</div>
             <p className="text-sm text-gray-500">Tudo quitado!</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {filteredPending.map((debt, i) => (
-              <DebtCard
-                key={i}
-                debt={debt}
-                activeUser={activeUser}
-                onPay={() => onPay(debt)}
-              />
+            {owedToMe.length > 0 && onlyMine && (
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-1">Te devem</p>
+            )}
+            {owedToMe.length > 0 && onlyMine && owedToMe.map((debt, i) => (
+              <DebtCard key={`owed-${i}`} debt={debt} activeUser={activeUser} onPay={() => onPay(debt)} />
+            ))}
+
+            {iOwe.length > 0 && onlyMine && (
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">Você deve</p>
+            )}
+            {iOwe.length > 0 && onlyMine && iOwe.map((debt, i) => (
+              <DebtCard key={`owe-${i}`} debt={debt} activeUser={activeUser} onPay={() => onPay(debt)} />
+            ))}
+
+            {!onlyMine && orderedPending.map((debt, i) => (
+              <DebtCard key={i} debt={debt} activeUser={activeUser} onPay={onPay ? () => onPay(debt) : null} />
             ))}
           </div>
         )}
