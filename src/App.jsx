@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useStorage } from './hooks/useStorage'
 import { computeSettlements } from './lib/settlement'
-import { ALL_MEMBERS, ADMIN_USER } from './lib/families'
+import { ALL_MEMBERS } from './lib/families'
 import SelectUser from './pages/SelectUser'
 import NewLunch from './pages/NewLunch'
 import History from './pages/History'
@@ -12,7 +12,6 @@ import UserChip from './components/UserChip'
 
 function SplashScreen({ onDone }) {
   const [phase, setPhase] = useState(0)
-  // phase 0: entrada do emoji, 1: título aparece, 2: fade out
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 600)
     const t2 = setTimeout(() => setPhase(2), 2800)
@@ -27,10 +26,8 @@ function SplashScreen({ onDone }) {
       }`}
     >
       <div
-        className={`text-6xl mb-6 transition-all duration-500 ${
-          phase >= 0 ? 'scale-100 opacity-100' : 'scale-50 opacity-0'
-        }`}
-        style={{ transform: phase === 0 ? 'scale(0.4)' : 'scale(1)' }}
+        className="text-6xl mb-6 transition-all duration-500"
+        style={{ transform: phase === 0 ? 'scale(0.4)' : 'scale(1)', opacity: phase === 0 ? 0 : 1 }}
       >
         🍽️
       </div>
@@ -66,14 +63,6 @@ export default function App() {
     setMembers((prev) => [...prev, name])
   }
 
-  function handleSelectUser(name) {
-    setActiveUser(name)
-  }
-
-  function handleSwitchUser() {
-    setActiveUser('')
-  }
-
   function handleSaveLunch(lunch) {
     setLunches((prev) => [...prev, lunch])
   }
@@ -83,22 +72,22 @@ export default function App() {
   }
 
   function handlePay(debt) {
-    const settlement = {
-      id: crypto.randomUUID(),
-      from: debt.from,
-      to: debt.to,
-      amount: debt.amount,
-      paidAt: new Date().toISOString(),
-    }
-    setSettlements((prev) => [...prev, settlement])
+    setSettlements((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        from: debt.from,
+        to: debt.to,
+        amount: debt.amount,
+        paidAt: new Date().toISOString(),
+      },
+    ])
   }
 
   const pendingDebts = computeSettlements(lunches, settlements)
   const myPendingCount = activeUser
     ? pendingDebts.filter((d) => d.from === activeUser || d.to === activeUser).length
     : 0
-
-  const isAdmin = activeUser === ADMIN_USER
 
   return (
     <BrowserRouter>
@@ -107,13 +96,12 @@ export default function App() {
       {!activeUser ? (
         <SelectUser
           members={members}
-          activeUser={activeUser}
-          onSelect={handleSelectUser}
+          onSelect={setActiveUser}
           onAddMember={handleAddMember}
         />
       ) : (
         <div className="flex flex-col min-h-svh bg-gray-50">
-          <UserChip user={activeUser} isAdmin={isAdmin} onSwitch={handleSwitchUser} />
+          <UserChip user={activeUser} onSwitch={() => setActiveUser('')} />
 
           <main className="flex-1">
             <Routes>
@@ -130,13 +118,7 @@ export default function App() {
               />
               <Route
                 path="/historico"
-                element={
-                  <History
-                    lunches={lunches}
-                    onDelete={handleDeleteLunch}
-                    isAdmin={isAdmin}
-                  />
-                }
+                element={<History lunches={lunches} onDelete={handleDeleteLunch} />}
               />
               <Route
                 path="/balanco"

@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FAMILIES, ADMIN_USER } from '../lib/families'
+import { FAMILIES } from '../lib/families'
 
-export default function SelectUser({ members, activeUser, onSelect, onAddMember }) {
+const KNOWN_MEMBERS = new Set(FAMILIES.flatMap((f) => f.members))
+
+export default function SelectUser({ members, onSelect, onAddMember }) {
   const [newName, setNewName] = useState('')
   const navigate = useNavigate()
 
@@ -19,14 +21,9 @@ export default function SelectUser({ members, activeUser, onSelect, onAddMember 
     setNewName('')
   }
 
-  // Build family groups from current members, preserving order
-  const knownSet = new Set(FAMILIES.flatMap((f) => f.members))
-  const extraMembers = members.filter((m) => !knownSet.has(m))
+  const extraMembers = members.filter((m) => !KNOWN_MEMBERS.has(m))
   const allFamilies = [
-    ...FAMILIES.map((f) => ({
-      ...f,
-      members: f.members.filter((m) => members.includes(m)),
-    })).filter((f) => f.members.length > 0),
+    ...FAMILIES,
     ...(extraMembers.length > 0 ? [{ name: 'Outros', members: extraMembers }] : []),
   ]
 
@@ -39,42 +36,27 @@ export default function SelectUser({ members, activeUser, onSelect, onAddMember 
           <p className="mt-1 text-sm text-gray-400">Toque no seu nome para entrar</p>
         </div>
 
-        {/* Admin destaque */}
-        <button
-          onClick={() => handleSelect(ADMIN_USER)}
-          className="w-full h-14 bg-brand text-white rounded-2xl font-bold text-base shadow-sm flex items-center justify-center gap-2"
-        >
-          <span>👑</span>
-          {ADMIN_USER}
-        </button>
-
         <div className="space-y-5">
-          {allFamilies
-            .map((family) => ({
-              ...family,
-              members: family.members.filter((m) => m !== ADMIN_USER),
-            }))
-            .filter((f) => f.members.length > 0)
-            .map((family, i) => (
-              <div key={i}>
-                {family.name && (
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                    {family.name}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {family.members.map((name) => (
-                    <button
-                      key={name}
-                      onClick={() => handleSelect(name)}
-                      className="h-11 px-5 rounded-2xl bg-white border border-gray-200 text-gray-800 font-medium text-sm shadow-sm active:bg-brand-light active:border-brand transition-colors"
-                    >
-                      {name}
-                    </button>
-                  ))}
-                </div>
+          {allFamilies.map((family, i) => (
+            <div key={i}>
+              {family.name && (
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  {family.name}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {family.members.map((name) => (
+                  <button
+                    key={name}
+                    onClick={() => handleSelect(name)}
+                    className="h-11 px-5 rounded-2xl bg-white border border-gray-200 text-gray-800 font-medium text-sm shadow-sm active:bg-brand-light active:border-brand transition-colors"
+                  >
+                    {name}
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
+          ))}
         </div>
 
         <form onSubmit={handleAdd} className="space-y-2 pt-2">
