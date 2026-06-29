@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FAMILIES } from '../lib/families'
 
-export default function SelectUser({ members, onSelect, onAddMember }) {
+export default function SelectUser({ members, onSelect, onAddMember, consultaKey }) {
   const [newName, setNewName] = useState('')
   const [open, setOpen] = useState({})
   const navigate = useNavigate()
@@ -81,6 +81,13 @@ export default function SelectUser({ members, onSelect, onAddMember }) {
             )
           })}
         </div>
+
+        <button
+          onClick={() => onSelect(consultaKey)}
+          className="w-full py-3 text-sm text-gray-400 underline underline-offset-2"
+        >
+          👁️ Só quero consultar
+        </button>
 
         <form onSubmit={handleAdd} className="space-y-2 pt-2">
           <p className="text-xs text-gray-400 uppercase tracking-wide">Adicionar pessoa</p>

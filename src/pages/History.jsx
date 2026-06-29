@@ -81,29 +81,22 @@ function LunchCard({ lunch, onDelete }) {
             </div>
           </div>
 
-          {!confirming ? (
-            <button
-              onClick={() => setConfirming(true)}
-              className="flex items-center gap-1 text-xs text-red-400 mt-2"
-            >
-              🗑 Excluir este almoço
-            </button>
-          ) : (
-            <div className="flex items-center gap-3 mt-2">
-              <span className="text-xs text-gray-600">Excluir este almoço?</span>
-              <button
-                onClick={() => onDelete(lunch.id)}
-                className="text-xs font-semibold text-red-500"
-              >
-                Sim, excluir
+          {onDelete && (
+            confirming ? (
+              <div className="flex items-center gap-3 mt-2">
+                <span className="text-xs text-gray-600">Excluir este almoço?</span>
+                <button onClick={() => onDelete(lunch.id)} className="text-xs font-semibold text-red-500">
+                  Sim, excluir
+                </button>
+                <button onClick={() => setConfirming(false)} className="text-xs text-gray-400">
+                  Cancelar
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setConfirming(true)} className="flex items-center gap-1 text-xs text-red-400 mt-2">
+                🗑 Excluir este almoço
               </button>
-              <button
-                onClick={() => setConfirming(false)}
-                className="text-xs text-gray-400"
-              >
-                Cancelar
-              </button>
-            </div>
+            )
           )}
         </div>
       )}
@@ -112,6 +105,7 @@ function LunchCard({ lunch, onDelete }) {
 }
 
 export default function History({ lunches, onDelete }) {
+  // onDelete null = read-only mode
   const sorted = [...lunches].sort((a, b) => b.date.localeCompare(a.date))
 
   if (sorted.length === 0) {

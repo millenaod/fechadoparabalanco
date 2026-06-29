@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { computeSettlements } from '../lib/settlement'
 
-export default function Home({ activeUser, lunches, settlements }) {
+export default function Home({ activeUser, lunches, settlements, readOnly }) {
   const navigate = useNavigate()
 
   const pending = computeSettlements(lunches, settlements)
@@ -90,14 +90,15 @@ export default function Home({ activeUser, lunches, settlements }) {
         </div>
       )}
 
-      {/* Botão adicionar almoço */}
-      <button
-        onClick={() => navigate('/novo')}
-        className="w-full h-14 bg-brand text-white rounded-2xl font-bold text-base flex items-center justify-center gap-3 shadow-sm"
-      >
-        <span className="text-xl">+</span>
-        Adicionar almoço
-      </button>
+      {!readOnly && (
+        <button
+          onClick={() => navigate('/novo')}
+          className="w-full h-14 bg-brand text-white rounded-2xl font-bold text-base flex items-center justify-center gap-3 shadow-sm"
+        >
+          <span className="text-xl">+</span>
+          Adicionar almoço
+        </button>
+      )}
     </div>
   )
 }
