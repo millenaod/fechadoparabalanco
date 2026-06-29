@@ -31,7 +31,7 @@ export default function SelectUser({ members, onSelect, onAddMember }) {
     <div className="flex flex-col min-h-svh bg-gray-50">
       <div className="flex-1 px-5 py-10 space-y-8 max-w-sm mx-auto w-full">
         <div className="text-center">
-          <div className="text-5xl mb-3">🍽️</div>
+          <img src="/logo.svg" alt="Rachaí" className="w-28 mx-auto mb-3" />
           <h1 className="text-2xl font-bold text-gray-900">Quem é você?</h1>
           <p className="mt-1 text-sm text-gray-400">Toque no seu nome para entrar</p>
         </div>

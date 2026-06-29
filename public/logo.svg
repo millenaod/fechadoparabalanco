@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fundo verde arredondado -->
+  <rect width="512" height="512" rx="120" fill="#1D9E75"/>
+
+  <!-- Sombra suave do prato -->
+  <circle cx="258" cy="212" r="124" fill="black" opacity="0.08"/>
+
+  <!-- Prato (aro externo) -->
+  <circle cx="256" cy="208" r="124" fill="white" opacity="0.12"/>
+  <circle cx="256" cy="208" r="112" fill="none" stroke="white" stroke-width="14" opacity="0.9"/>
+
+  <!-- Aro interno do prato -->
+  <circle cx="256" cy="208" r="80" fill="none" stroke="white" stroke-width="5" opacity="0.35"/>
+
+  <!-- Linha de divisão (tracejada) -->
+  <line x1="256" y1="84" x2="256" y2="332" stroke="white" stroke-width="9" stroke-dasharray="16 10" stroke-linecap="round" opacity="0.95"/>
+
+  <!-- Garfo (esquerda) -->
+  <g transform="translate(105, 118)" fill="white">
+    <!-- Cabo -->
+    <rect x="-5" y="58" width="10" height="62" rx="5"/>
+    <!-- Curvatura -->
+    <path d="M-5 58 Q-5 44 -11 44 L-11 52 Q-5 52 -5 58 Z" />
+    <path d="M5 58 Q5 44 11 44 L11 52 Q5 52 5 58 Z" />
+    <!-- Dentes -->
+    <rect x="-14" y="0" width="7" height="38" rx="3.5"/>
+    <rect x="-3.5" y="0" width="7" height="38" rx="3.5"/>
+    <rect x="7" y="0" width="7" height="38" rx="3.5"/>
+  </g>
+
+  <!-- Faca (direita) -->
+  <g transform="translate(396, 118)" fill="white">
+    <!-- Cabo -->
+    <rect x="-5" y="58" width="10" height="62" rx="5"/>
+    <!-- Lâmina -->
+    <path d="M-5 0 C-5 0 9 18 9 42 L9 58 L-5 58 Z" rx="2"/>
+  </g>
+
+  <!-- Wordmark: "Rachaí" -->
+  <text
+    x="256"
+    y="448"
+    text-anchor="middle"
+    fill="white"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+    font-weight="800"
+    font-size="86"
+    letter-spacing="-3"
+  >Rachaí</text>
+
+  <!-- Underline decorativo abaixo do texto -->
+  <line x1="180" y1="464" x2="332" y2="464" stroke="white" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+</svg>

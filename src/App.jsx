@@ -25,21 +25,24 @@ function SplashScreen({ onDone }) {
         phase === 2 ? 'opacity-0' : 'opacity-100'
       }`}
     >
+      <img
+        src="/logo.svg"
+        alt="Rachaí"
+        className="transition-all duration-500"
+        style={{
+          width: 180,
+          transform: phase === 0 ? 'scale(0.5)' : 'scale(1)',
+          opacity: phase === 0 ? 0 : 1,
+        }}
+      />
       <div
-        className="text-6xl mb-6 transition-all duration-500"
-        style={{ transform: phase === 0 ? 'scale(0.4)' : 'scale(1)', opacity: phase === 0 ? 0 : 1 }}
-      >
-        🍽️
-      </div>
-      <div
-        className={`text-center px-8 transition-all duration-500 ${
+        className={`text-center px-8 mt-6 transition-all duration-500 ${
           phase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
-        <p className="text-white/70 text-sm font-medium tracking-wide mb-1">Bem-vindo ao</p>
-        <h1 className="text-white text-2xl font-bold leading-tight">
-          Vem almoçar<br />na porta, pô! 😄
-        </h1>
+        <p className="text-white/80 text-base font-medium">
+          Vem almoçar na porta, pô! 😄
+        </p>
       </div>
     </div>
   )
