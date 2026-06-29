@@ -54,12 +54,14 @@ export default function App() {
   // Carrega dados e assina atualizações em tempo real
   useEffect(() => {
     async function loadData() {
-      const [{ data: lData }, { data: sData }] = await Promise.all([
+      const [{ data: lData }, { data: sData }, { data: mData }] = await Promise.all([
         supabase.from('lunches').select('*').order('created_at', { ascending: false }),
         supabase.from('settlements').select('*').order('paid_at', { ascending: false }),
+        supabase.from('members').select('name'),
       ])
       if (lData) setLunches(lData.map(lunchFromDb))
       if (sData) setSettlements(sData.map(settlementFromDb))
+      if (mData && mData.length > 0) setMembers(mData.map((r) => r.name))
       setLoading(false)
     }
     loadData()
@@ -135,7 +137,10 @@ export default function App() {
         <SelectUser
           members={members}
           onSelect={setActiveUser}
-          onAddMember={(name) => setMembers((prev) => [...prev, name])}
+          onAddMember={async (name) => {
+          await supabase.from('members').insert({ name, family_name: null })
+          setMembers((prev) => [...prev, name])
+        }}
           consultaKey={CONSULTA}
         />
       ) : (
