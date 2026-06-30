@@ -180,9 +180,16 @@ function FamilyDebtCard({ group, activeUser, myFam, onPay, paying, pixMap = {}, 
             return (
               <div key={i} className={`py-1.5 ${isMe ? 'font-semibold' : ''}`}>
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-700">
-                    {debt.from} → {debt.to}
-                  </p>
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      {debt.from} → {debt.to}
+                    </p>
+                    {debt.sources?.length > 0 && (
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {debt.sources.map(s => `${s.description} (${s.date.slice(8,10)}/${s.date.slice(5,7)})`).join(' · ')}
+                      </p>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     <p className="text-sm text-gray-800">R$ {debt.amount.toFixed(2).replace('.', ',')}</p>
                     {isMe && onPay && (

@@ -186,7 +186,7 @@ export default function App() {
                 <Balance lunches={lunches} settlements={settlements} activeUser={readOnly ? null : activeUser} onPay={readOnly ? null : handlePay} paying={paying} />
               } />
               {!readOnly && (
-                <Route path="/perfil" element={<Profile activeUser={activeUser} />} />
+                <Route path="/perfil" element={<Profile activeUser={activeUser} settlements={settlements} />} />
               )}
               {activeUser === ADMIN_USER && (
                 <Route path="/admin" element={

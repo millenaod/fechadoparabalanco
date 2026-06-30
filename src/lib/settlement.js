@@ -1,65 +1,66 @@
-import { FAMILIES } from './families'
-
 export function computeSettlements(lunches, paidSettlements) {
-  const balance = {}
+  // pairDebt[from][to] = { amount, sources: [{id, description, date, amount}] }
+  const pairDebt = {}
 
+  function add(from, to, amount, source) {
+    if (from === to || amount < 0.005) return
+    if (!pairDebt[from]) pairDebt[from] = {}
+    if (!pairDebt[from][to]) pairDebt[from][to] = { amount: 0, sources: [] }
+    pairDebt[from][to].amount += amount
+    pairDebt[from][to].sources.push({ ...source, amount: Math.round(amount * 100) / 100 })
+  }
+
+  // Calcula dívidas dentro de cada evento — nunca cruza eventos
   for (const lunch of lunches) {
     const share = lunch.total / lunch.attendees.length
+    const balance = {}
+
     for (const person of lunch.attendees) {
-      balance[person] = (balance[person] || 0) - share
+      balance[person] = -share
     }
     for (const payer of lunch.payers) {
       balance[payer.name] = (balance[payer.name] || 0) + payer.amount
     }
-  }
 
-  for (const s of paidSettlements) {
-    balance[s.from] = (balance[s.from] || 0) + s.amount
-    balance[s.to]   = (balance[s.to]   || 0) - s.amount
-  }
+    const debtors   = Object.entries(balance).filter(([, v]) => v < -0.01)
+    const creditors = Object.entries(balance).filter(([, v]) => v >  0.01)
+    const totalCredit = creditors.reduce((s, [, v]) => s + v, 0)
+    const source = { id: lunch.id, description: lunch.description || 'Almoço', date: lunch.date }
 
-  // Abate dívidas dentro da mesma família antes de calcular entre famílias
-  for (const family of FAMILIES) {
-    if (!family.name) continue // membros sem família são tratados individualmente
-
-    const debtors   = family.members.filter(m => (balance[m] || 0) < -0.01)
-                        .sort((a, b) => (balance[a] || 0) - (balance[b] || 0))
-    const creditors = family.members.filter(m => (balance[m] || 0) >  0.01)
-                        .sort((a, b) => (balance[b] || 0) - (balance[a] || 0))
-
-    let i = 0, j = 0
-    while (i < debtors.length && j < creditors.length) {
-      const debtor   = debtors[i]
-      const creditor = creditors[j]
-      const amount   = Math.min(-(balance[debtor] || 0), balance[creditor] || 0)
-
-      balance[debtor]   = (balance[debtor]   || 0) + amount
-      balance[creditor] = (balance[creditor] || 0) - amount
-
-      if (Math.abs(balance[debtor])   < 0.01) i++
-      if (Math.abs(balance[creditor]) < 0.01) j++
+    for (const [debtor, debt] of debtors) {
+      for (const [creditor, credit] of creditors) {
+        add(debtor, creditor, Math.abs(debt) * (credit / totalCredit), source)
+      }
     }
   }
 
-  // Greedy entre famílias diferentes
-  const debtors   = Object.entries(balance).filter(([, v]) => v < -0.01).sort((a, b) => a[1] - b[1])
-  const creditors = Object.entries(balance).filter(([, v]) => v >  0.01).sort((a, b) => b[1] - a[1])
+  // Desconta pagamentos já quitados — nunca cria dívida reversa
+  for (const s of paidSettlements) {
+    if (!pairDebt[s.from]) pairDebt[s.from] = {}
+    if (!pairDebt[s.from][s.to]) pairDebt[s.from][s.to] = { amount: 0, sources: [] }
+    pairDebt[s.from][s.to].amount = Math.max(0, pairDebt[s.from][s.to].amount - s.amount)
+  }
 
+  // Acerta direção e acumula por par sem duplicar
   const result = []
-  let i = 0, j = 0
+  const seen = new Set()
 
-  while (i < debtors.length && j < creditors.length) {
-    const [debtor, debt]     = debtors[i]
-    const [creditor, credit] = creditors[j]
-    const amount = Math.min(-debt, credit)
+  for (const from of Object.keys(pairDebt)) {
+    for (const to of Object.keys(pairDebt[from] || {})) {
+      const key = [from, to].sort().join('|||')
+      if (seen.has(key)) continue
+      seen.add(key)
 
-    result.push({ from: debtor, to: creditor, amount: Math.round(amount * 100) / 100 })
+      const ab = pairDebt[from]?.[to]?.amount || 0
+      const ba = pairDebt[to]?.[from]?.amount || 0
+      const net = ab - ba
 
-    debtors[i][1]   += amount
-    creditors[j][1] -= amount
-
-    if (Math.abs(debtors[i][1])   < 0.01) i++
-    if (Math.abs(creditors[j][1]) < 0.01) j++
+      if (net > 0.01) {
+        result.push({ from, to, amount: Math.round(net * 100) / 100, sources: pairDebt[from][to].sources })
+      } else if (net < -0.01) {
+        result.push({ from: to, to: from, amount: Math.round(-net * 100) / 100, sources: pairDebt[to][from].sources })
+      }
+    }
   }
 
   return result
