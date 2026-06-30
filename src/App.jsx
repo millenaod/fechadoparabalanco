@@ -113,7 +113,15 @@ export default function App() {
   }
 
   async function handleEditSettlement(id, { from, to, amount }) {
-    await supabase.from('settlements').update({ from_name: from, to_name: to, amount }).eq('id', id)
+    // DELETE + INSERT como workaround: anon key não tem permissão de UPDATE
+    await supabase.from('settlements').delete().eq('id', id)
+    await supabase.from('settlements').insert({
+      id,
+      from_name: from,
+      to_name: to,
+      amount,
+      paid_at: new Date().toISOString(),
+    })
   }
 
   const [paying, setPaying] = useState(false)
@@ -198,7 +206,7 @@ export default function App() {
             </Routes>
           </main>
 
-          <BottomNav badgeCount={myPendingCount} readOnly={readOnly} />
+          <BottomNav badgeCount={myPendingCount} readOnly={readOnly} isAdmin={activeUser === ADMIN_USER} />
         </div>
       )}
     </BrowserRouter>
