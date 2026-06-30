@@ -112,6 +112,10 @@ export default function App() {
     await supabase.from('settlements').delete().eq('id', id)
   }
 
+  async function handleEditSettlement(id, { from, to, amount }) {
+    await supabase.from('settlements').update({ from_name: from, to_name: to, amount }).eq('id', id)
+  }
+
   const [paying, setPaying] = useState(false)
 
   async function handlePay(debt) {
@@ -187,6 +191,7 @@ export default function App() {
                     lunches={lunches}
                     onDeleteSettlement={handleDeleteSettlement}
                     onDeleteLunch={handleDeleteLunch}
+                    onEditSettlement={handleEditSettlement}
                   />
                 } />
               )}
