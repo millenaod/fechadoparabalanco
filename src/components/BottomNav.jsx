@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 
-export default function BottomNav({ badgeCount, isAdmin }) {
+export default function BottomNav({ badgeCount, isAdmin, readOnly }) {
   const base = 'flex flex-col items-center gap-0.5 flex-1 py-2 text-xs font-medium text-gray-400 transition-colors'
   const active = 'text-brand'
 
@@ -33,6 +33,15 @@ export default function BottomNav({ badgeCount, isAdmin }) {
         </div>
         Balanço
       </NavLink>
+
+      {!readOnly && (
+        <NavLink to="/perfil" className={({ isActive }) => `${base} ${isActive ? active : ''}`}>
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Perfil
+        </NavLink>
+      )}
 
       {isAdmin && (
         <NavLink to="/admin" className={({ isActive }) => `${base} ${isActive ? active : ''}`}>
