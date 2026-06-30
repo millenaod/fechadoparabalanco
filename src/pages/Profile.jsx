@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { ADMIN_USER } from '../lib/families'
 
 export default function Profile({ activeUser }) {
+  const navigate = useNavigate()
   const [pixKey, setPixKey] = useState('')
   const [saved, setSaved] = useState(false)
   const [loading, setLoading] = useState(true)
+  const isAdmin = activeUser === ADMIN_USER
 
   useEffect(() => {
     supabase.from('members').select('pix_key').eq('name', activeUser).single()
@@ -58,6 +62,15 @@ export default function Profile({ activeUser }) {
       <p className="text-xs text-gray-300 text-center">
         Sua chave Pix fica visível para toda a família quando alguém precisar te pagar.
       </p>
+
+      {isAdmin && (
+        <button
+          onClick={() => navigate('/admin')}
+          className="w-full h-12 bg-gray-100 text-gray-600 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
+        >
+          ⚙️ Painel Admin
+        </button>
+      )}
     </div>
   )
 }

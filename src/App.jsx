@@ -10,8 +10,10 @@ import NewLunch from './pages/NewLunch'
 import History from './pages/History'
 import Balance from './pages/Balance'
 import Profile from './pages/Profile'
+import Admin from './pages/Admin'
 import BottomNav from './components/BottomNav'
 import UserChip from './components/UserChip'
+import { ADMIN_USER } from './lib/families'
 
 const CONSULTA = '__consulta__'
 
@@ -106,6 +108,10 @@ export default function App() {
     await supabase.from('lunches').delete().eq('id', id)
   }
 
+  async function handleDeleteSettlement(id) {
+    await supabase.from('settlements').delete().eq('id', id)
+  }
+
   const [paying, setPaying] = useState(false)
 
   async function handlePay(debt) {
@@ -173,6 +179,16 @@ export default function App() {
               } />
               {!readOnly && (
                 <Route path="/perfil" element={<Profile activeUser={activeUser} />} />
+              )}
+              {activeUser === ADMIN_USER && (
+                <Route path="/admin" element={
+                  <Admin
+                    settlements={settlements}
+                    lunches={lunches}
+                    onDeleteSettlement={handleDeleteSettlement}
+                    onDeleteLunch={handleDeleteLunch}
+                  />
+                } />
               )}
             </Routes>
           </main>

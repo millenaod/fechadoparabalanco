@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { computeSettlements } from '../lib/settlement'
 import { FAMILIES } from '../lib/families'
+import { supabase } from '../lib/supabase'
 
 function familyOf(name) {
   const f = FAMILIES.find((fam) => fam.name && fam.members.includes(name))
@@ -31,6 +32,18 @@ function aggregateByFamily(pending) {
 
 export default function Balance({ lunches, settlements, activeUser, onPay, paying }) {
   const [showPaid, setShowPaid] = useState(false)
+  const [pixMap, setPixMap] = useState({})
+
+  useEffect(() => {
+    supabase.from('members').select('name, pix_key').not('pix_key', 'is', null)
+      .then(({ data }) => {
+        if (data) {
+          const map = {}
+          data.forEach((r) => { if (r.pix_key) map[r.name] = r.pix_key })
+          setPixMap(map)
+        }
+      })
+  }, [])
 
   const pending  = computeSettlements(lunches, settlements)
   const paid     = settlements
@@ -83,7 +96,7 @@ export default function Balance({ lunches, settlements, activeUser, onPay, payin
               <div className="space-y-2">
                 <p className="text-sm font-bold text-brand">Devem para vocês</p>
                 {owedToUs.map((g, i) => (
-                  <FamilyDebtCard key={i} group={g} activeUser={activeUser} myFam={myFam} onPay={onPay} paying={paying} isCredit />
+                  <FamilyDebtCard key={i} group={g} activeUser={activeUser} myFam={myFam} onPay={onPay} paying={paying} pixMap={pixMap} isCredit />
                 ))}
               </div>
             )}
@@ -92,7 +105,7 @@ export default function Balance({ lunches, settlements, activeUser, onPay, payin
               <div className="space-y-2">
                 <p className="text-sm font-bold text-red-500">Vocês devem</p>
                 {weOwe.map((g, i) => (
-                  <FamilyDebtCard key={i} group={g} activeUser={activeUser} myFam={myFam} onPay={onPay} paying={paying} isCredit={false} />
+                  <FamilyDebtCard key={i} group={g} activeUser={activeUser} myFam={myFam} onPay={onPay} paying={paying} pixMap={pixMap} isCredit={false} />
                 ))}
               </div>
             )}
@@ -130,7 +143,7 @@ export default function Balance({ lunches, settlements, activeUser, onPay, payin
   )
 }
 
-function FamilyDebtCard({ group, activeUser, myFam, onPay, paying, isCredit }) {
+function FamilyDebtCard({ group, activeUser, myFam, onPay, paying, pixMap = {}, isCredit }) {
   const [expanded, setExpanded] = useState(false)
 
   const otherFam = isCredit ? group.fromFam : group.toFam
@@ -165,24 +178,31 @@ function FamilyDebtCard({ group, activeUser, myFam, onPay, paying, isCredit }) {
           {group.debts.map((debt, i) => {
             const isMe = debt.from === activeUser || debt.to === activeUser
             return (
-              <div key={i} className={`flex items-center justify-between py-1 ${isMe ? 'font-semibold' : ''}`}>
-                <p className="text-sm text-gray-700">
-                  {debt.from} → {debt.to}
-                </p>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-gray-800">R$ {debt.amount.toFixed(2).replace('.', ',')}</p>
-                  {isMe && onPay && (
-                    <button
-                      onClick={() => onPay(debt)}
-                      disabled={paying}
-                      className={`min-h-[44px] px-3 text-sm font-bold rounded-xl transition-opacity ${
-                        debt.to === activeUser ? 'bg-brand text-white' : 'bg-white text-brand border-2 border-brand'
-                      } ${paying ? 'opacity-50' : ''}`}
-                    >
-                      {paying ? '...' : debt.to === activeUser ? 'Recebi' : 'Paguei'}
-                    </button>
-                  )}
+              <div key={i} className={`py-1.5 ${isMe ? 'font-semibold' : ''}`}>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-700">
+                    {debt.from} → {debt.to}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-800">R$ {debt.amount.toFixed(2).replace('.', ',')}</p>
+                    {isMe && onPay && (
+                      <button
+                        onClick={() => onPay(debt)}
+                        disabled={paying}
+                        className={`min-h-[44px] px-3 text-sm font-bold rounded-xl transition-opacity ${
+                          debt.to === activeUser ? 'bg-brand text-white' : 'bg-white text-brand border-2 border-brand'
+                        } ${paying ? 'opacity-50' : ''}`}
+                      >
+                        {paying ? '...' : debt.to === activeUser ? 'Recebi' : 'Paguei'}
+                      </button>
+                    )}
+                  </div>
                 </div>
+                {pixMap[debt.to] && (
+                  <p className="text-xs text-brand mt-0.5 select-all">
+                    Pix: <span className="font-medium">{pixMap[debt.to]}</span>
+                  </p>
+                )}
               </div>
             )
           })}
