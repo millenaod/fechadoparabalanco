@@ -1,32 +1,31 @@
-export default function DebtCard({ debt, activeUser, onPay }) {
-  const isDebtor   = debt.from === activeUser   // eu devo
-  const isCreditor = debt.to   === activeUser   // me devem
+export default function DebtCard({ debt, activeUser, onPay, paying }) {
+  const isDebtor   = debt.from === activeUser
+  const isCreditor = debt.to   === activeUser
   const isInvolved = isDebtor || isCreditor
 
-  const btnLabel = isCreditor ? 'Recebi ✓' : 'Paguei ✓'
+  const btnLabel = paying ? '...' : isCreditor ? 'Recebi ✓' : 'Paguei ✓'
   const btnStyle = isCreditor
     ? 'bg-brand text-white'
-    : 'bg-white text-brand border border-brand'
+    : 'bg-white text-brand border-2 border-brand'
 
   return (
     <div className={`bg-white rounded-2xl border p-4 flex items-center gap-3 ${isInvolved ? 'border-brand/40' : 'border-gray-100'}`}>
-      <div className="w-10 h-10 rounded-full bg-brand-light flex items-center justify-center text-brand font-bold text-sm flex-shrink-0">
+      <div className="w-11 h-11 rounded-full bg-brand-light flex items-center justify-center text-brand font-bold text-base flex-shrink-0">
         {debt.from[0]}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-gray-800 leading-snug">
-          <span className={`font-semibold ${isDebtor ? 'text-red-500' : ''}`}>{debt.from}</span>
-          {' deve '}
-          <span className="font-semibold text-brand">
-            R$ {debt.amount.toFixed(2).replace('.', ',')}
-          </span>
-          {' para '}
-          <span className={`font-semibold ${isCreditor ? 'text-brand' : ''}`}>{debt.to}</span>
+        <p className="text-base text-gray-800 leading-snug">
+          <span className={`font-bold ${isDebtor ? 'text-red-500' : ''}`}>{debt.from}</span>
+          <span className="text-gray-400"> → </span>
+          <span className={`font-bold ${isCreditor ? 'text-brand' : ''}`}>{debt.to}</span>
+        </p>
+        <p className="text-sm font-semibold text-gray-700 mt-0.5">
+          R$ {debt.amount.toFixed(2).replace('.', ',')}
         </p>
         {isInvolved && (
           <p className="text-xs text-gray-400 mt-0.5">
-            {isCreditor ? 'te devem' : 'você deve'}
+            {isCreditor ? 'estão te devendo' : 'você deve'}
           </p>
         )}
       </div>
@@ -34,7 +33,8 @@ export default function DebtCard({ debt, activeUser, onPay }) {
       {isInvolved && onPay && (
         <button
           onClick={onPay}
-          className={`flex-shrink-0 h-9 px-3 text-xs font-semibold rounded-xl ${btnStyle}`}
+          disabled={paying}
+          className={`flex-shrink-0 min-h-[48px] px-4 text-sm font-bold rounded-xl transition-opacity ${btnStyle} ${paying ? 'opacity-50' : ''}`}
         >
           {btnLabel}
         </button>

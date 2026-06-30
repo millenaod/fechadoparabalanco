@@ -8,7 +8,7 @@ function familyOf(name) {
   return f?.name || null
 }
 
-export default function General({ lunches, settlements, activeUser, onPay }) {
+export default function General({ lunches, settlements, activeUser, onPay, paying }) {
   const [pixMap, setPixMap] = useState({})
 
   useEffect(() => {
@@ -111,11 +111,12 @@ export default function General({ lunches, settlements, activeUser, onPay }) {
                         {isMe && onPay && (
                           <button
                             onClick={() => onPay(debt)}
-                            className={`flex-shrink-0 h-8 px-3 text-xs font-semibold rounded-xl ${
-                              isCreditor ? 'bg-brand text-white' : 'bg-white text-brand border border-brand'
-                            }`}
+                            disabled={paying}
+                            className={`flex-shrink-0 min-h-[48px] px-4 text-sm font-bold rounded-xl transition-opacity ${
+                              isCreditor ? 'bg-brand text-white' : 'bg-white text-brand border-2 border-brand'
+                            } ${paying ? 'opacity-50' : ''}`}
                           >
-                            {isCreditor ? 'Recebi' : 'Paguei'}
+                            {paying ? '...' : isCreditor ? 'Recebi' : 'Paguei'}
                           </button>
                         )}
                       </div>

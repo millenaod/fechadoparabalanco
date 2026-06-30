@@ -2,7 +2,7 @@ import { useState } from 'react'
 import DebtCard from '../components/DebtCard'
 import { computeSettlements } from '../lib/settlement'
 
-export default function Balance({ lunches, settlements, activeUser, onPay }) {
+export default function Balance({ lunches, settlements, activeUser, onPay, paying }) {
   const [onlyMine, setOnlyMine] = useState(!!activeUser)
   const [showPaid, setShowPaid] = useState(false)
 
@@ -70,18 +70,18 @@ export default function Balance({ lunches, settlements, activeUser, onPay }) {
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-1">Te devem</p>
             )}
             {owedToMe.length > 0 && onlyMine && owedToMe.map((debt, i) => (
-              <DebtCard key={`owed-${i}`} debt={debt} activeUser={activeUser} onPay={() => onPay(debt)} />
+              <DebtCard key={`owed-${i}`} debt={debt} activeUser={activeUser} onPay={() => onPay(debt)} paying={paying} />
             ))}
 
             {iOwe.length > 0 && onlyMine && (
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-2">Você deve</p>
             )}
             {iOwe.length > 0 && onlyMine && iOwe.map((debt, i) => (
-              <DebtCard key={`owe-${i}`} debt={debt} activeUser={activeUser} onPay={() => onPay(debt)} />
+              <DebtCard key={`owe-${i}`} debt={debt} activeUser={activeUser} onPay={() => onPay(debt)} paying={paying} />
             ))}
 
             {!onlyMine && orderedPending.map((debt, i) => (
-              <DebtCard key={i} debt={debt} activeUser={activeUser} onPay={onPay ? () => onPay(debt) : null} />
+              <DebtCard key={i} debt={debt} activeUser={activeUser} onPay={onPay ? () => onPay(debt) : null} paying={paying} />
             ))}
           </div>
         )}

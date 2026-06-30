@@ -34,7 +34,7 @@ function SplashScreen({ onDone }) {
         style={{ width: 180, transform: phase === 0 ? 'scale(0.5)' : 'scale(1)', opacity: phase === 0 ? 0 : 1 }}
       />
       <div className={`text-center px-8 mt-6 transition-all duration-500 ${phase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-        <p className="text-white/80 text-base font-medium">Vem almoçar na porta, pô! 😄</p>
+        <p className="text-white/80 text-base font-medium">Vem almoçar na horta, pô! 😄</p>
       </div>
     </div>
   )
@@ -107,14 +107,22 @@ export default function App() {
     await supabase.from('lunches').delete().eq('id', id)
   }
 
+  const [paying, setPaying] = useState(false)
+
   async function handlePay(debt) {
-    await supabase.from('settlements').insert({
-      id: crypto.randomUUID(),
-      from_name: debt.from,
-      to_name: debt.to,
-      amount: debt.amount,
-      paid_at: new Date().toISOString(),
-    })
+    if (paying) return
+    setPaying(true)
+    try {
+      await supabase.from('settlements').insert({
+        id: crypto.randomUUID(),
+        from_name: debt.from,
+        to_name: debt.to,
+        amount: debt.amount,
+        paid_at: new Date().toISOString(),
+      })
+    } finally {
+      setPaying(false)
+    }
   }
 
   const readOnly = activeUser === CONSULTA
@@ -162,10 +170,10 @@ export default function App() {
                 <History lunches={lunches} onDelete={readOnly ? null : handleDeleteLunch} />
               } />
               <Route path="/balanco" element={
-                <Balance lunches={lunches} settlements={settlements} activeUser={readOnly ? null : activeUser} onPay={readOnly ? null : handlePay} />
+                <Balance lunches={lunches} settlements={settlements} activeUser={readOnly ? null : activeUser} onPay={readOnly ? null : handlePay} paying={paying} />
               } />
               <Route path="/geral" element={
-                <General lunches={lunches} settlements={settlements} activeUser={readOnly ? null : activeUser} onPay={readOnly ? null : handlePay} />
+                <General lunches={lunches} settlements={settlements} activeUser={readOnly ? null : activeUser} onPay={readOnly ? null : handlePay} paying={paying} />
               } />
               {!readOnly && (
                 <Route path="/perfil" element={<Profile activeUser={activeUser} />} />
