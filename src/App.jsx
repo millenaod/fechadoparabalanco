@@ -108,6 +108,10 @@ export default function App() {
     await supabase.from('lunches').delete().eq('id', id)
   }
 
+  async function handleEditLunch(id, { payers, total, splitPerPerson }) {
+    await supabase.from('lunches').update({ payers, total, split_per_person: splitPerPerson }).eq('id', id)
+  }
+
   async function handleDeleteSettlement(id) {
     await supabase.from('settlements').delete().eq('id', id)
   }
@@ -192,6 +196,7 @@ export default function App() {
                     onDeleteSettlement={handleDeleteSettlement}
                     onDeleteLunch={handleDeleteLunch}
                     onEditSettlement={handleEditSettlement}
+                    onEditLunch={handleEditLunch}
                   />
                 } />
               )}
