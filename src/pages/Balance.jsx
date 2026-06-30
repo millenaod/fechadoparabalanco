@@ -154,8 +154,42 @@ export default function Balance({ lunches, settlements, activeUser, onPay, payin
   )
 }
 
+function PixPanel({ pixKey, onConfirm, paying }) {
+  const [copied, setCopied] = useState(false)
+
+  function copy() {
+    navigator.clipboard.writeText(pixKey).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  return (
+    <div className="mt-2 bg-brand-light border border-brand/20 rounded-xl p-3 space-y-2">
+      <p className="text-xs font-semibold text-brand">Chave Pix para pagamento:</p>
+      <div className="flex items-center gap-2">
+        <p className="text-sm font-bold text-gray-900 break-all flex-1">{pixKey}</p>
+        <button
+          onClick={copy}
+          className="flex-shrink-0 h-10 px-3 bg-brand text-white text-xs font-bold rounded-xl"
+        >
+          {copied ? 'Copiado ✓' : 'Copiar'}
+        </button>
+      </div>
+      <button
+        onClick={onConfirm}
+        disabled={paying}
+        className={`w-full h-11 border-2 border-brand text-brand text-sm font-bold rounded-xl ${paying ? 'opacity-50' : ''}`}
+      >
+        {paying ? '...' : 'Já transferi ✓'}
+      </button>
+    </div>
+  )
+}
+
 function FamilyDebtCard({ group, activeUser, myFam, onPay, paying, pixMap = {}, isCredit, lunches = [] }) {
   const [expanded, setExpanded] = useState(false)
+  const [showPixFor, setShowPixFor] = useState(null)
 
   const otherFam = isCredit ? group.fromFam : group.toFam
   const canPay   = onPay && group.debts.some(
@@ -198,22 +232,44 @@ function FamilyDebtCard({ group, activeUser, myFam, onPay, paying, pixMap = {}, 
                   <div className="flex items-center gap-2">
                     <p className="text-sm text-gray-800">R$ {debt.amount.toFixed(2).replace('.', ',')}</p>
                     {isMe && onPay && (
-                      <button
-                        onClick={() => onPay(debt)}
-                        disabled={paying}
-                        className={`min-h-[44px] px-3 text-sm font-bold rounded-xl transition-opacity ${
-                          debt.to === activeUser ? 'bg-brand text-white' : 'bg-white text-brand border-2 border-brand'
-                        } ${paying ? 'opacity-50' : ''}`}
-                      >
-                        {paying ? '...' : debt.to === activeUser ? 'Recebi' : 'Paguei'}
-                      </button>
+                      debt.to === activeUser ? (
+                        <button
+                          onClick={() => onPay(debt)}
+                          disabled={paying}
+                          className={`min-h-[44px] px-3 text-sm font-bold rounded-xl bg-brand text-white transition-opacity ${paying ? 'opacity-50' : ''}`}
+                        >
+                          {paying ? '...' : 'Recebi'}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setShowPixFor(showPixFor === i ? null : i)}
+                          className="min-h-[44px] px-3 text-sm font-bold rounded-xl bg-white text-brand border-2 border-brand"
+                        >
+                          Pagar
+                        </button>
+                      )
                     )}
                   </div>
                 </div>
-                {pixMap[debt.to] && (
-                  <p className="text-xs text-brand mt-0.5 select-all">
-                    Pix: <span className="font-medium">{pixMap[debt.to]}</span>
-                  </p>
+                {isMe && debt.from === activeUser && showPixFor === i && (
+                  pixMap[debt.to] ? (
+                    <PixPanel
+                      pixKey={pixMap[debt.to]}
+                      onConfirm={() => { setShowPixFor(null); onPay(debt) }}
+                      paying={paying}
+                    />
+                  ) : (
+                    <div className="mt-2 bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-2">
+                      <p className="text-xs text-gray-500">{debt.to} ainda não cadastrou a chave Pix.</p>
+                      <button
+                        onClick={() => { setShowPixFor(null); onPay(debt) }}
+                        disabled={paying}
+                        className={`w-full h-11 border-2 border-brand text-brand text-sm font-bold rounded-xl ${paying ? 'opacity-50' : ''}`}
+                      >
+                        {paying ? '...' : 'Já acertei pessoalmente ✓'}
+                      </button>
+                    </div>
+                  )
                 )}
               </div>
             )
