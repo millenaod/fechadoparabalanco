@@ -55,16 +55,11 @@ export default function Home({ activeUser, lunches, settlements, readOnly }) {
         <div className="space-y-2">
           <p className="text-sm font-semibold text-gray-700">Você deve</p>
           {iOwe.map((d, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-red-100 px-4 py-3 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-sm text-gray-700">para <span className="font-semibold">{d.to}</span></p>
-                {d.sources?.length > 0 && (
-                  <p className="text-xs text-gray-400 mt-0.5 truncate">
-                    {d.sources.map(s => `${s.description} (${s.date.slice(8,10)}/${s.date.slice(5,7)})`).join(' · ')}
-                  </p>
-                )}
-              </div>
-              <p className="text-sm font-bold text-red-500 flex-shrink-0">
+            <div key={i} className="bg-white rounded-2xl border border-red-100 px-4 py-3 flex items-center justify-between">
+              <p className="text-sm text-gray-700">
+                para <span className="font-semibold">{d.to}</span>
+              </p>
+              <p className="text-sm font-bold text-red-500">
                 R$ {d.amount.toFixed(2).replace('.', ',')}
               </p>
             </div>
@@ -76,16 +71,11 @@ export default function Home({ activeUser, lunches, settlements, readOnly }) {
         <div className="space-y-2">
           <p className="text-sm font-semibold text-gray-700">Te devem</p>
           {theyOweMe.map((d, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-brand/20 px-4 py-3 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-sm text-gray-700 font-semibold">{d.from}</p>
-                {d.sources?.length > 0 && (
-                  <p className="text-xs text-gray-400 mt-0.5 truncate">
-                    {d.sources.map(s => `${s.description} (${s.date.slice(8,10)}/${s.date.slice(5,7)})`).join(' · ')}
-                  </p>
-                )}
-              </div>
-              <p className="text-sm font-bold text-brand flex-shrink-0">
+            <div key={i} className="bg-white rounded-2xl border border-brand/20 px-4 py-3 flex items-center justify-between">
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold">{d.from}</span>
+              </p>
+              <p className="text-sm font-bold text-brand">
                 R$ {d.amount.toFixed(2).replace('.', ',')}
               </p>
             </div>
