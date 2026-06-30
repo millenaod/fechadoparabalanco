@@ -113,15 +113,7 @@ export default function App() {
   }
 
   async function handleEditSettlement(id, { from, to, amount }) {
-    // DELETE + INSERT como workaround: anon key não tem permissão de UPDATE
-    await supabase.from('settlements').delete().eq('id', id)
-    await supabase.from('settlements').insert({
-      id,
-      from_name: from,
-      to_name: to,
-      amount,
-      paid_at: new Date().toISOString(),
-    })
+    await supabase.from('settlements').update({ from_name: from, to_name: to, amount }).eq('id', id)
   }
 
   const [paying, setPaying] = useState(false)
