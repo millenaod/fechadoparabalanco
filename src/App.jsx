@@ -177,7 +177,7 @@ export default function App() {
               } />
               <Route path="/novo" element={
                 readOnly ? <Home activeUser={null} lunches={lunches} settlements={settlements} readOnly /> :
-                <NewLunch members={members} activeUser={activeUser} onSave={handleSaveLunch} />
+                <NewLunch members={members} activeUser={activeUser} onSave={handleSaveLunch} hasPending={pendingDebts.length > 0} />
               } />
               <Route path="/historico" element={
                 <History lunches={lunches} onDelete={readOnly ? null : handleDeleteLunch} />

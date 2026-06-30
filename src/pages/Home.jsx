@@ -1,6 +1,17 @@
 import { useNavigate } from 'react-router-dom'
 import { computeSettlements } from '../lib/settlement'
 
+function sourceLunch(from, to, lunches) {
+  return [...lunches]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .find((l) => l.attendees.includes(from) && l.attendees.includes(to))
+}
+
+function fmtDate(dateStr) {
+  const [, m, d] = dateStr.split('-')
+  return `${d}/${m}`
+}
+
 export default function Home({ activeUser, lunches, settlements, readOnly }) {
   const navigate = useNavigate()
 
@@ -54,32 +65,40 @@ export default function Home({ activeUser, lunches, settlements, readOnly }) {
       {iOwe.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-semibold text-gray-700">Você deve</p>
-          {iOwe.map((d, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-red-100 px-4 py-3 flex items-center justify-between">
-              <p className="text-sm text-gray-700">
-                para <span className="font-semibold">{d.to}</span>
-              </p>
-              <p className="text-sm font-bold text-red-500">
-                R$ {d.amount.toFixed(2).replace('.', ',')}
-              </p>
-            </div>
-          ))}
+          {iOwe.map((d, i) => {
+            const lunch = sourceLunch(d.from, d.to, lunches)
+            return (
+              <div key={i} className="bg-white rounded-2xl border border-red-100 px-4 py-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-700">para <span className="font-semibold">{d.to}</span></p>
+                  {lunch && (
+                    <p className="text-xs text-gray-400 mt-0.5">{lunch.description || 'Almoço'} · {fmtDate(lunch.date)}</p>
+                  )}
+                </div>
+                <p className="text-sm font-bold text-red-500 flex-shrink-0">R$ {d.amount.toFixed(2).replace('.', ',')}</p>
+              </div>
+            )
+          })}
         </div>
       )}
 
       {theyOweMe.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-semibold text-gray-700">Te devem</p>
-          {theyOweMe.map((d, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-brand/20 px-4 py-3 flex items-center justify-between">
-              <p className="text-sm text-gray-700">
-                <span className="font-semibold">{d.from}</span>
-              </p>
-              <p className="text-sm font-bold text-brand">
-                R$ {d.amount.toFixed(2).replace('.', ',')}
-              </p>
-            </div>
-          ))}
+          {theyOweMe.map((d, i) => {
+            const lunch = sourceLunch(d.from, d.to, lunches)
+            return (
+              <div key={i} className="bg-white rounded-2xl border border-brand/20 px-4 py-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-700 font-semibold">{d.from}</p>
+                  {lunch && (
+                    <p className="text-xs text-gray-400 mt-0.5">{lunch.description || 'Almoço'} · {fmtDate(lunch.date)}</p>
+                  )}
+                </div>
+                <p className="text-sm font-bold text-brand flex-shrink-0">R$ {d.amount.toFixed(2).replace('.', ',')}</p>
+              </div>
+            )
+          })}
         </div>
       )}
 

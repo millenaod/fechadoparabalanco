@@ -8,7 +8,7 @@ function today() {
   return new Date().toISOString().slice(0, 10)
 }
 
-export default function NewLunch({ members, activeUser, onSave }) {
+export default function NewLunch({ members, activeUser, onSave, hasPending }) {
   const navigate = useNavigate()
   const [date, setDate] = useState(today())
   const [description, setDescription] = useState('')
@@ -77,6 +77,13 @@ export default function NewLunch({ members, activeUser, onSave }) {
 
       <div className="px-4 py-6 space-y-6">
         <h2 className="text-xl font-bold text-gray-900">Novo almoço</h2>
+
+        {hasPending && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3">
+            <p className="text-sm text-yellow-800 font-medium">Ainda há dívidas em aberto do evento anterior.</p>
+            <p className="text-xs text-yellow-600 mt-0.5">Recomendamos quitar antes de registrar um novo almoço.</p>
+          </div>
+        )}
 
         <div className="space-y-5">
           <div>

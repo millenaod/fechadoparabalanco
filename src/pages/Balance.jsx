@@ -3,6 +3,17 @@ import { computeSettlements } from '../lib/settlement'
 import { FAMILIES } from '../lib/families'
 import { supabase } from '../lib/supabase'
 
+function sourceLunch(from, to, lunches) {
+  return [...lunches]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .find((l) => l.attendees.includes(from) && l.attendees.includes(to))
+}
+
+function fmtDate(dateStr) {
+  const [, m, d] = dateStr.split('-')
+  return `${d}/${m}`
+}
+
 function familyOf(name) {
   const f = FAMILIES.find((fam) => fam.name && fam.members.includes(name))
   return f?.name || null
@@ -96,7 +107,7 @@ export default function Balance({ lunches, settlements, activeUser, onPay, payin
               <div className="space-y-2">
                 <p className="text-sm font-bold text-brand">Devem para vocês</p>
                 {owedToUs.map((g, i) => (
-                  <FamilyDebtCard key={i} group={g} activeUser={activeUser} myFam={myFam} onPay={onPay} paying={paying} pixMap={pixMap} isCredit />
+                  <FamilyDebtCard key={i} group={g} activeUser={activeUser} myFam={myFam} onPay={onPay} paying={paying} pixMap={pixMap} isCredit lunches={lunches} />
                 ))}
               </div>
             )}
@@ -105,7 +116,7 @@ export default function Balance({ lunches, settlements, activeUser, onPay, payin
               <div className="space-y-2">
                 <p className="text-sm font-bold text-red-500">Vocês devem</p>
                 {weOwe.map((g, i) => (
-                  <FamilyDebtCard key={i} group={g} activeUser={activeUser} myFam={myFam} onPay={onPay} paying={paying} pixMap={pixMap} isCredit={false} />
+                  <FamilyDebtCard key={i} group={g} activeUser={activeUser} myFam={myFam} onPay={onPay} paying={paying} pixMap={pixMap} isCredit={false} lunches={lunches} />
                 ))}
               </div>
             )}
@@ -143,7 +154,7 @@ export default function Balance({ lunches, settlements, activeUser, onPay, payin
   )
 }
 
-function FamilyDebtCard({ group, activeUser, myFam, onPay, paying, pixMap = {}, isCredit }) {
+function FamilyDebtCard({ group, activeUser, myFam, onPay, paying, pixMap = {}, isCredit, lunches = [] }) {
   const [expanded, setExpanded] = useState(false)
 
   const otherFam = isCredit ? group.fromFam : group.toFam
@@ -180,9 +191,10 @@ function FamilyDebtCard({ group, activeUser, myFam, onPay, paying, pixMap = {}, 
             return (
               <div key={i} className={`py-1.5 ${isMe ? 'font-semibold' : ''}`}>
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-700">
-                    {debt.from} → {debt.to}
-                  </p>
+                  <div>
+                    <p className="text-sm text-gray-700">{debt.from} → {debt.to}</p>
+                    {(() => { const l = sourceLunch(debt.from, debt.to, lunches); return l ? <p className="text-xs text-gray-400 mt-0.5">{l.description || 'Almoço'} · {fmtDate(l.date)}</p> : null })()}
+                  </div>
                   <div className="flex items-center gap-2">
                     <p className="text-sm text-gray-800">R$ {debt.amount.toFixed(2).replace('.', ',')}</p>
                     {isMe && onPay && (
